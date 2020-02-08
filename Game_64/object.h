@@ -1,5 +1,5 @@
-#ifndef TRIANGLE
-#define TRIANGLE
+#ifndef OBJECT
+#define OBJECT
 
 #include <cstdlib>
 #include <iostream>
