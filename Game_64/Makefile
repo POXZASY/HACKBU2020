@@ -6,7 +6,7 @@ main: main.cpp glew.o
 	g++ -o main main.cpp glew.o $(FLAGS)
 
 object: $(OBJECT) object.h
-	g++ glew.o $(FLAGS) -c $(OBJECT) -o object.o
+	g++ glew.o $(FLAGS) $(OBJECT) -o object
 run: main
 	./main.exe
 

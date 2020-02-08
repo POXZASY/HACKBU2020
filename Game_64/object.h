@@ -3,17 +3,33 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
 class Triangle{
 public:
-  float **coor;
-  float **color;
+  vector<vector<float>> coor;
+  vector<vector<float>> color;
+  Triangle(vector<vector<float>>, vector<vector<float>>);
+  vector<vector<float>> getCoor();
+};
 
-
-  Triangle(float**, float**);
+class Square{
+public:
+  vector<vector<float>> coor;
+  vector<vector<float>> color;
+  Square();
+  vector<vector<float>> getCoor();
 
 };
+
+class Cube{
+public:
+  vector<vector<float>> coor;
+  vector<vector<float>> color;
+  Cube();
+  vector<vector<float>> getCoor();
+}
 
 #endif
