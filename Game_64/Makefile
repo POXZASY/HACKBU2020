@@ -3,8 +3,8 @@ FLAGS = -lopengl32 -L./lib/ -lglfw3 -lglew32 -Wall -g -m64 -std=c++17 -static-li
 main: main.cpp glew.o
 	g++ -o main main.cpp glew.o $(FLAGS)
 
-object: object.cpp object.h
-	g++ -o object object.cpp object.h glew.o $(FLAGS)
+triangle: triangle.cpp triangle.h
+	g++ -o triangle triangle.cpp triangle.h glew.o $(FLAGS)
 run: main
 	./main.exe
 
