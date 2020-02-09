@@ -16,6 +16,7 @@
 #define THICKNESS 5
 using namespace std;
 
+
 /*
   Objects like tables, doors, windows(?), buttons, pressure plates, floor/plate that teleports you on collision [TELEPORT FUNCTION],
   global array of points and colors of points
@@ -41,6 +42,7 @@ public:
   }
 };
 
+vector<Object> AllObjects;
 
 class Cube : public Object {
 public:
@@ -48,11 +50,11 @@ public:
   vector<float> pos; //@TODO initialize <x, y ,z>
   vector<float> all_triangles;
   vector<float> colors;
-  float min_X, min_Y, min_Z, max_X, max_Y, max_Z; //@TODO initialize
+  float min_X, min_Y, min_Z, max_X, max_Y, max_Z; 
   Cube();
   Cube(vector<float> init_position, vector<float> WHL, vector<float> front_face, vector<float> back_face, vector<float> left_face, vector<float> right_face,
   vector<float> top_face, vector<float> bottom_face) : Object(){
-
+    this->pos = init_position;
     this->dimensions = WHL;
     this->pos = init_position;
     min_X = this->pos[0];
@@ -142,36 +144,38 @@ public:
   vector<float> top_face, vector<float> bottom_face){
     this->FrontWall = Cube(init_position, {dim[0], dim[1], THICKNESS}, front_face, front_face, front_face, front_face, front_face,front_face);
     this->BackWall = Cube({RoomDim(0), RoomDim(1), RoomDim(2)+dim[2]}, {dim[0], dim[1], THICKNESS}, back_face, back_face, back_face, back_face, back_face, back_face);
+    mergeArray_colors(FrontWall.colors);
+    mergeArray_colors(BackWall.colors);
+    mergeArray_coords(FrontWall.all_triangles);
+    mergeArray_coords(BackWall.all_triangles);
 
     this->LeftWall = Cube(init_position, {THICKNESS, dim[1], dim[2]}, left_face, left_face, left_face, left_face, left_face, left_face);
     this->RightWall = Cube({RoomDim(0)+dim[0], RoomDim(1), RoomDim(2)}, {THICKNESS, dim[1], dim[2]}, right_face, right_face, right_face, right_face, right_face, right_face);
     
+    mergeArray_colors(LeftWall.colors);
+    mergeArray_colors(RightWall.colors);
+    mergeArray_coords(LeftWall.all_triangles);
+    mergeArray_coords(RightWall.all_triangles);
     this->Ceiling = Cube({RoomDim(0), RoomDim(1)+dim[1], RoomDim(2)}, {dim[0], THICKNESS, dim[2]}, top_face, top_face, top_face, top_face, top_face, top_face);
     this->Floor = Cube(init_position, {dim[0], -THICKNESS, dim[2]}, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face);
 
+    mergeArray_colors(Ceiling.colors);
+    mergeArray_colors(Floor.colors);
+    mergeArray_coords(Ceiling.all_triangles);
+    mergeArray_coords(Floor.all_triangles);
   }
 
+  void mergeArray_colors(vector<float> obj_color){
+    vector<float> temp = this->colors;
+    temp.insert(temp.end(), obj_color.begin(), obj_color.end());
+    this->colors = temp;
+  }
+  void mergeArray_coords(vector<float> obj_position){
+    vector<float> temp;
+    temp.insert(temp.end(), obj_position.begin(),obj_position.end());
+    this->all_triangles = temp;
+}
 };
-
-vector<float> mergeAllArrays_coords(vector<Object> objs){
-  vector<float> temp;
-  for(Object o : objs){
-    temp.insert(temp.end(), o.all_triangles.begin(), o.all_triangles.end());
-  }
-  return temp;
-}
-
-vector<float> mergeAllArrays_colors(vector<Object> objs){
-  vector<float> temp;
-  for(Object o : objs){
-    temp.insert(temp.end(), o.colors.begin(), o.colors.end());
-  }
-  return temp;
-}
-
-void teleport(Object Player, vector<float> location){
-  Player.updatePerson(location[0], location[1], location[2]);
-}
 
 class Button: public Cube{
 public:
@@ -181,8 +185,5 @@ public:
   vector<float> top_face, vector<float> bottom_face):Cube(init_position, WHL, front_face, back_face, left_face, right_face, top_face, bottom_face){
     IsPressed = false;
   }
-  
-}
-
-
+};
 #endif
