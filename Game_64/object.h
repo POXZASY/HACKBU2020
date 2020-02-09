@@ -158,12 +158,12 @@ public:
   Room(vector<float> init_position, vector<float> dim, vector<float> front_face, vector<float> back_face, vector<float> left_face, vector<float> right_face,
   vector<float> top_face, vector<float> bottom_face){
     this->FrontWall = Cube(init_position, {dim[0], dim[1], THICKNESS}, front_face, front_face, front_face, front_face, front_face,front_face);
-    this->BackWall = Cube({RoomDim[0], RoomDim[1], RoomDim[2]+dim[2]}, {dim[0], dim[1], THICKNESS}, back_face, back_face, back_face, back_face, back_face, back_face);
+    this->BackWall = Cube({RoomDim(0), RoomDim(1), RoomDim(2)+dim[2]}, {dim[0], dim[1], THICKNESS}, back_face, back_face, back_face, back_face, back_face, back_face);
 
     this->LeftWall = Cube(init_position, {THICKNESS, dim[1], dim[2]}, left_face, left_face, left_face, left_face, left_face, left_face);
-    this->RightWall = Cube({RoomDim[0]+dim[0], RoomDim[1], RoomDim[2]}, {THICKNESS, dim[1], dim[2]}, right_face, right_face, right_face, right_face, right_face, right_face);
+    this->RightWall = Cube({RoomDim(0)+dim[0], RoomDim(1), RoomDim(2)}, {THICKNESS, dim[1], dim[2]}, right_face, right_face, right_face, right_face, right_face, right_face);
     
-    this->Ceiling = Cube({RoomDim[0], RoomDim[1]+dim[1], RoomDim[2]}, {dim[0], THICKNESS, dim[2]}, top_face, top_face, top_face, top_face, top_face, top_face);
+    this->Ceiling = Cube({RoomDim(0), RoomDim(1)+dim[1], RoomDim(2)}, {dim[0], THICKNESS, dim[2]}, top_face, top_face, top_face, top_face, top_face, top_face);
     this->Floor = Cube(init_position, {dim[0], THICKNESS, dim[2]}, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face);
 
     
