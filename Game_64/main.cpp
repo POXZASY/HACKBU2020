@@ -135,6 +135,10 @@ void drawWorld(){
 }
 int main(){
 
+    Object person = Object();
+    person.updatePerson(eyex, eyey, eyez);
+
+    vector<Cube> objectlist;
     //Making a Cube !
     vector<float> colorP{PURPLE};
     vector<float> colorR{RED};
@@ -149,6 +153,7 @@ int main(){
       g_vertex_buffer_data[i] = testCube.all_triangles[i];
       g_color_buffer_data[i] = testCube.colors[i];
     }
+    objectlist.push_back(testCube);
 
 
     int window_width;
@@ -333,6 +338,10 @@ int main(){
         if(goRight) eye+=rightVec*cameraSpeed;
         eye.y = eyey; //don't fly
 
+        person.updatePerson(eye.x, eye.y, eye.z);
+
+
+
         //if currently jumping
         if(inJumpSequence){
           eye.y+=jumpHeight(deltaTime);
@@ -344,11 +353,33 @@ int main(){
             //cout << "Peak height: " << peakHeight << endl;
           }
         }
-        //if(inJumpSequence) cout << "y: " << eye.y << endl;
+        //Collision checking
+        for(long long unsigned int i = 0; i < objectlist.size(); i++){
+          Cube obj = objectlist[i];
+          //if the player collides with an object, adjust x, y, z individually and re-check the intersection until you find the correct overlap
+          if(isCollision(obj, person)){
+            cout << "Collided with object: " << i << endl;
+            cout << "eye.x: " << eye.x << "eye.y: " << eye.y << "eye.z: " << eye.z << endl;
+            cout << "eyex: " << eyex << "eyey: " << eyey << "eyez: " << eyez << endl;
+            //check y intersection
+            person.updatePerson(eyex, eyey, eyez);
+            //check x intersection
+            if(isCollision(obj, person)){
+              person.updatePerson(eyex, eye.y, eye.z);
+              //check z intersection
+              if(isCollision(obj, person)){
+                person.updatePerson(eye.x, eye.y, eyez);
+                cout << "got here" << endl;
+              }
+            }
+          }
+        }
 
-        //if(eye.y > peakHeight) peakHeight = eye.y;
+        //update the old eye variables to this frame
+        eyex = eye.x;
+        eyey = eye.y;
+        eyez = eye.z;
 
-        //drawWorld();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
