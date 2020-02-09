@@ -1,4 +1,5 @@
 //http://www.opengl-tutorial.org/beginners-tutorials/tutorial-4-a-colored-cube/
+//https://learnopengl.com/Getting-started/Camera
 #define GLFW_DLL
 #define GLEW_DLL
 #define GLEW_BUILD
@@ -13,14 +14,28 @@
 
 using namespace std;
 
+
+
 static float eyex = 0.0;
 static float eyey = 5.7;
 static float eyez = 0.0;
-float dist = .01;
-bool addX = false;
-bool subX = false;
-bool addZ = false;
-bool subZ = false;
+static glm::vec3 eye = glm::vec3(eyex, eyey, eyez); //"eye" is actually location of the player
+static glm::vec3 dirvec = glm::vec3(0.0f, 0.0f, 1.0f);
+static float cameraSpeed = 0;
+static float cameraSpeedBase = 10;
+static bool goForward = false;
+static bool goBackward = false;
+static bool goLeft = false;
+static bool goRight = false;
+static const float mouseSensitivity = .05f;
+static float yaw = -90.0f;
+static float pitch = 0.0f;
+static bool firstMouse = true;
+static float lastX;
+static float lastY;
+static double mousex;
+static double mousey;
+static bool inJumpSequence = false;
 
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -31,21 +46,48 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
     glfwSetWindowShouldClose(window, 1);
   }
   if(key == GLFW_KEY_W){
-    if(action == GLFW_PRESS) addZ = true;
-    if(action == GLFW_RELEASE) addZ = false;
+    if(action == GLFW_PRESS) goForward = true;
+    if(action == GLFW_RELEASE) goForward = false;
   }
   if(key == GLFW_KEY_A){
-    if(action == GLFW_PRESS) addX = true;
-    if(action == GLFW_RELEASE) addX = false;
+    if(action == GLFW_PRESS) goLeft = true;
+    if(action == GLFW_RELEASE) goLeft = false;
   }
   if(key == GLFW_KEY_S){
-    if(action == GLFW_PRESS) subZ = true;
-    if(action == GLFW_RELEASE) subZ = false;
+    if(action == GLFW_PRESS) goBackward = true;
+    if(action == GLFW_RELEASE) goBackward = false;
   }
   if(key == GLFW_KEY_D){
-    if(action == GLFW_PRESS) subX = true;
-    if(action == GLFW_RELEASE) subX = false;
+    if(action == GLFW_PRESS) goRight = true;
+    if(action == GLFW_RELEASE) goRight = false;
   }
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos){
+  //mouse input
+  if(firstMouse){
+    lastX = xpos;
+    lastY = ypos;
+    firstMouse = false;
+  }
+
+  float xoffset = xpos - lastX;
+  float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
+  xoffset *= mouseSensitivity;
+  yoffset *= mouseSensitivity;
+  lastX = xpos;
+  lastY = ypos;
+
+  yaw += xoffset;
+  pitch += yoffset;
+  if(pitch > 89.9f) pitch = 89.9f;
+  if(pitch < -89.9f) pitch = -89.9f;
+
+  glm::vec3 direction;
+  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  direction.y = sin(glm::radians(pitch));
+  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  dirvec = glm::normalize(direction);
 }
 
 void drawWorld(){
@@ -100,7 +142,8 @@ int main(){
 
     //Mouse input
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    if (glfwRawMouseMotionSupported())  glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    //if (glfwRawMouseMotionSupported())  glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    glfwSetCursorPosCallback(window, mouse_callback);
 
     //initialize glew
     glewExperimental = GL_TRUE;
@@ -177,17 +220,24 @@ int main(){
 
 
 
-
+    //Time / movement management
+    float lastFrame = 0;
 
     //GAME LOOP
     while (!glfwWindowShouldClose(window)){
+        //normalizing movement to elapsed time
+        float currentFrame = glfwGetTime();
+        float deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        cameraSpeed = cameraSpeedBase * deltaTime;
+        //mouse movement
+        glfwGetCursorPos(window, &mousex, &mousey);
+        mouse_callback(window, mousex, mousey); //modifies dirvec with mouse
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Update camera
-        glm::vec3 eye = glm::vec3(eyex, eyey, eyez);
-        glm::vec3 target = glm::vec3(eyex, eyey, eyez+20);
-        glm::mat4 view = glm::lookAt(eye, target, upwards); //view matrix
+        glm::mat4 view = glm::lookAt(eye, eye+dirvec, upwards); //view matrix
         glm::mat4 mvp = projection*view*model; //Model View Projection matrix
         GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
@@ -227,10 +277,15 @@ int main(){
         glDisableVertexAttribArray(0);
 
         //Player movement
-        if(addX) eyex+=dist;
-        if(subX) eyex-=dist;
-        if(addZ) eyez+=dist;
-        if(subZ) eyez-=dist;
+        float eyey = eye.y;
+        dirvec.y = 0.0;
+        dirvec = glm::normalize(dirvec);
+        if(goForward) eye+=dirvec*cameraSpeed;
+        if(goBackward) eye-=dirvec*cameraSpeed;
+        glm::vec3 rightVec = glm::normalize(glm::cross(dirvec, upwards));
+        if(goLeft) eye-=rightVec*cameraSpeed;
+        if(goRight) eye+=rightVec*cameraSpeed;
+        eye.y = eyey; //don't fly
 
         //drawWorld();
         glfwSwapBuffers(window);
