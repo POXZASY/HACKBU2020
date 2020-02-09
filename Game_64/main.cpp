@@ -47,6 +47,8 @@ static float jumpCurrentX = jumpMinX;
 static float jumpSpeedMag = 10.0f; //speed of iteration through "x" of function
 static float jumpMag = 8.0f; //magnitude of peak height
 static bool currentlyJumping = false;
+static bool isStanding = true;
+static float floorY = 0.0;
 
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -73,7 +75,10 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
   }
   //Jumping
   if(key == GLFW_KEY_SPACE){
-    if(action == GLFW_PRESS) currentlyJumping = true;
+    if(action == GLFW_PRESS){
+      currentlyJumping = true;
+      isStanding = false;
+    }
     if(action == GLFW_RELEASE) currentlyJumping = false;
   }
 }
@@ -143,7 +148,7 @@ int main(){
     vector<float> colorP{PURPLE};
     vector<float> colorR{RED};
     vector<float> colorB{BLUE};
-    vector<float> position{10.0f, -2.0f, 10.0f};
+    vector<float> position{10.0f, -9.0f, 10.0f};
     vector<float> dimensions{10.0f, 10.0f, 10.0f};
     Cube testCube = Cube(position, dimensions, colorP, colorP, colorR, colorR, colorB ,colorB);
     const int numfloats = 108;
@@ -346,11 +351,11 @@ int main(){
         if(inJumpSequence){
           eye.y+=jumpHeight(deltaTime);
           //TODO: TEMPORARY CONDITION FOR ENDING JUMP
-          if(eye.y < 5.7){
-            eye.y = 5.7;
+          if(eye.y < floorY+5.7){
+            eye.y = floorY+5.7;
             jumpCurrentX = jumpMinX;
             inJumpSequence = false;
-            //cout << "Peak height: " << peakHeight << endl;
+            isStanding = true;
           }
         }
         //Collision checking
@@ -358,19 +363,34 @@ int main(){
           Cube obj = objectlist[i];
           //if the player collides with an object, adjust x, y, z individually and re-check the intersection until you find the correct overlap
           if(isCollision(obj, person)){
-            cout << "Collided with object: " << i << endl;
-            cout << "eye.x: " << eye.x << "eye.y: " << eye.y << "eye.z: " << eye.z << endl;
-            cout << "eyex: " << eyex << "eyey: " << eyey << "eyez: " << eyez << endl;
+            float deltax = eyex - eye.x;
+            float deltay = eyey - eye.y;
+            float deltaz = eyez - eye.z;
             //check y intersection
-            person.updatePerson(eyex, eyey, eyez);
+            cout << eye.y << endl;
+            person.updatePerson(eye.x, eyey+deltay, eye.z);
+            eye.y = eyey+deltay;
             //check x intersection
             if(isCollision(obj, person)){
-              person.updatePerson(eyex, eye.y, eye.z);
+              person.updatePerson(eye.x, eyey-deltay, eye.z);
+              eye.y = eyey-deltay;
+              person.updatePerson(eyex+deltax, eye.y, eye.z);
+              eye.x = eyex+deltax;
               //check z intersection
               if(isCollision(obj, person)){
-                person.updatePerson(eye.x, eye.y, eyez);
-                cout << "got here" << endl;
+                person.updatePerson(eyex-deltax, eye.y, eye.z);
+                eye.x = eyex-deltax;
+                person.updatePerson(eye.x, eye.y, eyez+deltaz);
+                eye.z = eyez+deltaz;
               }
+            }
+            //if y collision, set is standing
+            else{
+              floorY = obj.max_Y+.01;
+              person.updatePerson(eye.x, floorY+5.7, eye.z);
+              eye.y = floorY+5.7;
+              isStanding = true;
+              inJumpSequence = false;
             }
           }
         }
