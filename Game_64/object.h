@@ -117,24 +117,7 @@ public:
       bottom_face[0], bottom_face[1], bottom_face[2], bottom_face[0], bottom_face[1], bottom_face[2], bottom_face[0], bottom_face[1], bottom_face[2],
       bottom_face[0], bottom_face[1], bottom_face[2], bottom_face[0], bottom_face[1], bottom_face[2], bottom_face[0], bottom_face[1], bottom_face[2]
     };
-
   }
-  //Change to (starting point, dimensions, colors of faces)
-  /*
-  vector<vector<float>> getCoor(){
-    vector<vector<float>> retval;
-    for(int i = 0; i < 8; i++){
-      vector<float> temp;
-      temp.clear();
-      for(int j = 0; j < 3; j++){
-        temp.push_back(this->coor[i][j]);
-      }
-      retval.push_back(temp);
-    }
-    return retval;
-  }*/
-
-
 };
 
 /*************************************************************************************************************/
@@ -164,9 +147,8 @@ public:
     this->RightWall = Cube({RoomDim(0)+dim[0], RoomDim(1), RoomDim(2)}, {THICKNESS, dim[1], dim[2]}, right_face, right_face, right_face, right_face, right_face, right_face);
     
     this->Ceiling = Cube({RoomDim(0), RoomDim(1)+dim[1], RoomDim(2)}, {dim[0], THICKNESS, dim[2]}, top_face, top_face, top_face, top_face, top_face, top_face);
-    this->Floor = Cube(init_position, {dim[0], THICKNESS, dim[2]}, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face);
+    this->Floor = Cube(init_position, {dim[0], -THICKNESS, dim[2]}, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face);
 
-    
   }
 
 };
@@ -185,6 +167,21 @@ vector<float> mergeAllArrays_colors(vector<Object> objs){
     temp.insert(temp.end(), o.colors.begin(), o.colors.end());
   }
   return temp;
+}
+
+void teleport(Object Player, vector<float> location){
+  Player.updatePerson(location[0], location[1], location[2]);
+}
+
+class Button: public Cube{
+public:
+  bool IsPressed;
+  Button();
+  Button(vector<float> init_position, vector<float> WHL, vector<float> front_face, vector<float> back_face, vector<float> left_face, vector<float> right_face,
+  vector<float> top_face, vector<float> bottom_face):Cube(init_position, WHL, front_face, back_face, left_face, right_face, top_face, bottom_face){
+    IsPressed = false;
+  }
+  
 }
 
 
