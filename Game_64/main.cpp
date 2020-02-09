@@ -47,8 +47,8 @@ static float jumpCurrentX = jumpMinX;
 static float jumpSpeedMag = 10.0f; //speed of iteration through "x" of function
 static float jumpMag = 8.0f; //magnitude of peak height
 static bool currentlyJumping = false;
-static bool isStanding = true;
 static float floorY = 0.0;
+static bool isStanding = true;
 
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -77,7 +77,6 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
   if(key == GLFW_KEY_SPACE){
     if(action == GLFW_PRESS){
       currentlyJumping = true;
-      isStanding = false;
     }
     if(action == GLFW_RELEASE) currentlyJumping = false;
   }
@@ -138,6 +137,8 @@ void drawWorld(){
   glVertex3f(.5, -.5, 0);
   glEnd();
 }
+
+
 int main(){
 
     Object person = Object();
@@ -149,16 +150,21 @@ int main(){
     vector<float> colorR{RED};
     vector<float> colorB{BLUE};
     vector<float> position{10.0f, -9.0f, 10.0f};
+    vector<float> position2{-5.0f, -80.0f, -5.0f};
     vector<float> dimensions{10.0f, 10.0f, 10.0f};
     Cube testCube = Cube(position, dimensions, colorP, colorP, colorR, colorR, colorB ,colorB);
+    Cube testCube2 = Cube(position2, dimensions, colorP, colorP, colorR, colorR, colorB ,colorB);
     const int numfloats = 108;
-    GLfloat g_vertex_buffer_data[numfloats];
-    GLfloat g_color_buffer_data[numfloats];
+    GLfloat g_vertex_buffer_data[2*numfloats];
+    GLfloat g_color_buffer_data[2*numfloats];
     for(int i = 0; i < numfloats; i++){
-      g_vertex_buffer_data[i] = testCube.all_triangles[i];
-      g_color_buffer_data[i] = testCube.colors[i];
+        g_vertex_buffer_data[i] = testCube.all_triangles[i];
+        g_color_buffer_data[i] = testCube.colors[i];
+        g_vertex_buffer_data[i+108] = testCube2.all_triangles[i];
+        g_color_buffer_data[i+108] = testCube2.colors[i];
     }
     objectlist.push_back(testCube);
+    objectlist.push_back(testCube2);
 
 
     int window_width;
@@ -273,10 +279,16 @@ int main(){
 
     //float peakHeight = -1;
 
+    float fallCurrentX = 0.0;
+    float fallSpeedMag = jumpSpeedMag;
+    float fallMag = jumpMag;
 
+    bool isFalling = false;
 
     //GAME LOOP
     while (!glfwWindowShouldClose(window)){
+        //if(isFalling) cout << "falling: " << isFalling << endl;
+        //if(inJumpSequence) cout << "jumping: " << inJumpSequence << endl;
         //normalizing movement to elapsed time
         float currentFrame = glfwGetTime();
         float deltaTime = currentFrame - lastFrame;
@@ -287,7 +299,10 @@ int main(){
         mouse_callback(window, mousex, mousey); //modifies dirvec with mouse
 
         //jumping
-        if(currentlyJumping && inJumpSequence == false) inJumpSequence = true;
+        if(currentlyJumping && inJumpSequence == false){
+          inJumpSequence = true;
+
+        }
 
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -355,7 +370,6 @@ int main(){
             eye.y = floorY+5.7;
             jumpCurrentX = jumpMinX;
             inJumpSequence = false;
-            isStanding = true;
           }
         }
         //Collision checking
@@ -363,11 +377,12 @@ int main(){
           Cube obj = objectlist[i];
           //if the player collides with an object, adjust x, y, z individually and re-check the intersection until you find the correct overlap
           if(isCollision(obj, person)){
+            //cout << "collision detected" << endl;
             float deltax = eyex - eye.x;
             float deltay = eyey - eye.y;
             float deltaz = eyez - eye.z;
             //check y intersection
-            cout << eye.y << endl;
+            //cout << eye.y << endl;
             person.updatePerson(eye.x, eyey+deltay, eye.z);
             eye.y = eyey+deltay;
             //check x intersection
@@ -389,7 +404,6 @@ int main(){
               floorY = obj.max_Y+.01;
               person.updatePerson(eye.x, floorY+5.7, eye.z);
               eye.y = floorY+5.7;
-              isStanding = true;
               inJumpSequence = false;
             }
           }
@@ -400,8 +414,36 @@ int main(){
         eyey = eye.y;
         eyez = eye.z;
 
+        //CHECK FOR STANDING
+        isFalling = true;
+        if(inJumpSequence) isFalling = false;
+        person.updatePerson(eye.x, eye.y - .01, eye.z);
+        eye.y = eye.y - .01;
+        for(long long unsigned int i = 0; i < objectlist.size(); i++){
+          Cube obj = objectlist[i];
+          if(isCollision(obj, person)){
+            isFalling = false;
+          }
+        }
+        person.updatePerson(eye.x, eye.y + .01, eye.z);
+        eye.y = eye.y + .01;
+
+        if(isFalling){
+          fallCurrentX = fallCurrentX+fallSpeedMag*deltaTime; //iterating the "x"
+          eye.y = eye.y + -1.0f*fallMag*deltaTime*(fallCurrentX); //updating the "f(x)"
+          person.updatePerson(eye.x, eye.y, eye.z);
+        }
+        else{
+          fallCurrentX = 0.0f;
+        }
+        if(eye.y < 5.7 && glfwGetTime()<3){
+          eye.y = 5.7;
+          person.updatePerson(eye.x, eye.y, eye.z);
+        }
+        //cout << eye.y << endl;
         glfwSwapBuffers(window);
         glfwPollEvents();
+
     }
     // Cleanup VBO and shader
   	glDeleteBuffers(1, &vertexbuffer);
