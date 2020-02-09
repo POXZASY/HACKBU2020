@@ -14,8 +14,6 @@
 
 using namespace std;
 
-
-
 static float eyex = 0.0;
 static float eyey = 5.7;
 static float eyez = 0.0;
@@ -27,6 +25,7 @@ static bool goForward = false;
 static bool goBackward = false;
 static bool goLeft = false;
 static bool goRight = false;
+//mouse movement
 static const float mouseSensitivity = .05f;
 static float yaw = -90.0f;
 static float pitch = 0.0f;
@@ -35,16 +34,20 @@ static float lastX;
 static float lastY;
 static double mousex;
 static double mousey;
+//jumping
 static bool inJumpSequence = false;
+static float jumpMinX = -3.0f; //starting x in parabola y = -x^2 + b
+static float jumpCurrentX = jumpMinX;
+static float jumpSpeedMag = 10.0f; //speed of iteration through "x" of function
+static float jumpMag = 0.01f; //magnitude of peak height
 
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods){
-  if(key == GLFW_KEY_G && action == GLFW_PRESS){
-    glClearColor(0.0, 1.0, 0.0, 0.0);
-  }
+  //ESC
   if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
     glfwSetWindowShouldClose(window, 1);
   }
+  //WASD Movement
   if(key == GLFW_KEY_W){
     if(action == GLFW_PRESS) goForward = true;
     if(action == GLFW_RELEASE) goForward = false;
@@ -60,6 +63,12 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
   if(key == GLFW_KEY_D){
     if(action == GLFW_PRESS) goRight = true;
     if(action == GLFW_RELEASE) goRight = false;
+  }
+  //Jumping
+  if(key == GLFW_KEY_SPACE && action == GLFW_PRESS){
+    if(!inJumpSequence){ //if not already jumping
+      inJumpSequence = true;
+    }
   }
 }
 
@@ -90,6 +99,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos){
   dirvec = glm::normalize(direction);
 }
 
+//adding the derivative of f(x) = -x^2 + b every frame
+float jumpHeight(float deltaTime){
+  jumpCurrentX = jumpCurrentX+jumpSpeedMag*deltaTime; //iterating the "x"
+  float newheight = -1.0f*jumpMag*(jumpCurrentX); //updating the "f(x)"
+  return newheight;
+}
+
 void drawWorld(){
   //Set up the game window
   //glMatrixMode(GL_MODELVIEW);
@@ -114,7 +130,6 @@ void drawWorld(){
 int main(){
     int window_width;
     int window_height;
-
     GLFWwindow* window;
 
     //Initialize the library
@@ -286,6 +301,17 @@ int main(){
         if(goLeft) eye-=rightVec*cameraSpeed;
         if(goRight) eye+=rightVec*cameraSpeed;
         eye.y = eyey; //don't fly
+
+        //if currently jumping
+        if(inJumpSequence){
+          eye.y+=jumpHeight(deltaTime);
+          //TODO: TEMPORARY CONDITION FOR ENDING JUMP
+          if(eye.y < 5.7){
+            eye.y = 5.7;
+            jumpCurrentX = jumpMinX;
+            inJumpSequence = false;
+          }
+        }
 
         //drawWorld();
         glfwSwapBuffers(window);
