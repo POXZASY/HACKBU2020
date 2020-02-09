@@ -312,6 +312,7 @@ int main(){
             inJumpSequence = false;
           }
         }
+        if(inJumpSequence) cout << "y: " << eye.y << endl;
 
         //drawWorld();
         glfwSwapBuffers(window);
