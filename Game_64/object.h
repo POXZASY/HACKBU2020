@@ -27,7 +27,7 @@ public:
   Object(){
     min_X = max_X = min_Y = max_Y = min_Z = max_Z = 0;
   }
-  
+
   //person function ONLY
   void updatePerson(float x, float y, float z){
     min_X = x - .5;
@@ -55,33 +55,13 @@ public:
 
     this->dimensions = WHL;
     this->pos = init_position;
-    min_X= min_Y= min_Z= max_X= max_Y= max_Z = 0;
-    setBounds();
-    createTriangles(front_face, back_face, left_face, right_face, top_face, bottom_face);
-  }
-
-  void setBounds(){
-    /*
-    for(vector<float> point : this->coor){
-      if(point[0] < this->min_X) this->min_X = point[0];
-      if(point[0] > this->max_X) this->max_X = point[0];
-
-      if(point[1] < this->min_Y) this->min_Y = point[1];
-      if(point[1] > this->max_Y) this->max_Y = point[1];
-
-      if(point[2] < this->min_Z) this->min_Z = point[2];
-      if(point[2] > this->max_Z) this->max_Z = point[2];
-    }
-    if(abs(this->min_X - this->max_X) != this->dimensions[0] || abs(this->min_Y - this->max_Y) != this->dimensions[1] || abs(this->min_Z- this->max_Z) != this->dimensions[2]){
-      cout<<"Error setting bounds, length != min-max\n";
-    }*/
     min_X = this->pos[0];
     min_Y = this->pos[1];
     min_Z = this->pos[2];
     max_X = this->pos[0] + this->dimensions[0];
     max_Y = this->pos[1] + this->dimensions[1];
     max_Z = this->pos[2] + this->dimensions[2];
-
+    createTriangles(front_face, back_face, left_face, right_face, top_face, bottom_face);
   }
   void createTriangles(vector<float> front_face, vector<float> back_face, vector<float> left_face, vector<float> right_face,
   vector<float> top_face, vector<float> bottom_face){
@@ -158,12 +138,12 @@ public:
 };
 
 /*************************************************************************************************************/
-bool isCollision(Object a, Object b){
+bool isCollision(Cube a, Object b){
   return (a.min_X <= b.max_X && a.max_X >= b.min_X) &&
   (a.min_Z <= b.max_Z && a.max_Z >= b.min_Z) &&
   (a.min_Y <= b.max_Y && a.max_Y >= b.min_Y);
 }
-
+/*
 class Room : public Object{
 public:
   Cube FrontWall;
@@ -180,7 +160,7 @@ public:
 
   }
 }
-
+*/
 
 
 
