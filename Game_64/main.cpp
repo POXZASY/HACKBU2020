@@ -40,6 +40,7 @@ static float jumpMinX = -3.0f; //starting x in parabola y = -x^2 + b
 static float jumpCurrentX = jumpMinX;
 static float jumpSpeedMag = 10.0f; //speed of iteration through "x" of function
 static float jumpMag = 8.0f; //magnitude of peak height
+static bool currentlyJumping = false;
 
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -65,10 +66,9 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
     if(action == GLFW_RELEASE) goRight = false;
   }
   //Jumping
-  if(key == GLFW_KEY_SPACE && action == GLFW_PRESS){
-    if(!inJumpSequence){ //if not already jumping
-      inJumpSequence = true;
-    }
+  if(key == GLFW_KEY_SPACE){
+    if(action == GLFW_PRESS) currentlyJumping = true;
+    if(action == GLFW_RELEASE) currentlyJumping = false;
   }
 }
 
@@ -238,7 +238,7 @@ int main(){
     //Time / movement management
     float lastFrame = 0;
 
-    float peakHeight = -1;
+    //float peakHeight = -1;
 
     //GAME LOOP
     while (!glfwWindowShouldClose(window)){
@@ -250,6 +250,10 @@ int main(){
         //mouse movement
         glfwGetCursorPos(window, &mousex, &mousey);
         mouse_callback(window, mousex, mousey); //modifies dirvec with mouse
+
+        //jumping
+        if(currentlyJumping && inJumpSequence == false) inJumpSequence = true;
+
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -312,12 +316,12 @@ int main(){
             eye.y = 5.7;
             jumpCurrentX = jumpMinX;
             inJumpSequence = false;
-            cout << "Peak height: " << peakHeight << endl;
+            //cout << "Peak height: " << peakHeight << endl;
           }
         }
         //if(inJumpSequence) cout << "y: " << eye.y << endl;
 
-        if(eye.y > peakHeight) peakHeight = eye.y;
+        //if(eye.y > peakHeight) peakHeight = eye.y;
 
         //drawWorld();
         glfwSwapBuffers(window);
