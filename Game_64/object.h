@@ -27,7 +27,9 @@ public:
   Object(){
     min_X = max_X = min_Y = max_Y = min_Z = max_Z = 0;
   }
-  
+  vector<float> all_triangles;
+  vector<float> colors;
+
   //person function ONLY
   void updatePerson(float x, float y, float z){
     min_X = x - .5;
@@ -42,8 +44,6 @@ public:
 
 class Cube : public Object {
 public:
-  //vector<vector<float>> coor;
-  vector<vector<float>> color;
   vector<float> dimensions; // vector of lengths of form <width_, height_, length>
   vector<float> pos; //@TODO initialize <x, y ,z>
   vector<float> all_triangles;
@@ -172,15 +172,40 @@ public:
   Cube RightWall;
   Cube Ceiling;
   Cube Floor;
+  vector<float> all_triangles;
+  vector<float> colors;
   Room();
   Room(vector<float> init_position, vector<float> dim, vector<float> front_face, vector<float> back_face, vector<float> left_face, vector<float> right_face,
   vector<float> top_face, vector<float> bottom_face){
-    this->FrontWall = Cube(init_position, {dim[0], dim[1], }, front_face, front_face, front_face, front_face, front_face,front_face);
-    this->BackWall = Cube({RoomDim[0]+dim[2], RoomDim[1], RoomDim[2]}, dim, back_face, back_face, back_face, back_face, back_face, back_face);
+    this->FrontWall = Cube(init_position, {dim[0], dim[1], THICKNESS}, front_face, front_face, front_face, front_face, front_face,front_face);
+    this->BackWall = Cube({RoomDim[0], RoomDim[1], RoomDim[2]+dim[2]}, {dim[0], dim[1], THICKNESS}, back_face, back_face, back_face, back_face, back_face, back_face);
 
+    this->LeftWall = Cube(init_position, {THICKNESS, dim[1], dim[2]}, left_face, left_face, left_face, left_face, left_face, left_face);
+    this->RightWall = Cube({RoomDim[0]+dim[0], RoomDim[1], RoomDim[2]}, {THICKNESS, dim[1], dim[2]}, right_face, right_face, right_face, right_face, right_face, right_face);
+    
+    this->Ceiling = Cube({RoomDim[0], RoomDim[1]+dim[1], RoomDim[2]}, {dim[0], THICKNESS, dim[2]}, top_face, top_face, top_face, top_face, top_face, top_face);
+    this->Floor = Cube(init_position, {dim[0], THICKNESS, dim[2]}, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face, bottom_face);
+
+    
   }
+
+};
+
+vector<float> mergeAllArrays_coords(vector<Object> objs){
+  vector<float> temp;
+  for(Object o : objs){
+    temp.insert(temp.end(), o.all_triangles.begin(), o.all_triangles.end());
+  }
+  return temp;
 }
 
+vector<float> mergeAllArrays_coords(vector<Object> objs){
+  vector<float> temp;
+  for(Object o : objs){
+    temp.insert(temp.end(), o.colors.begin(), o.colors.end());
+  }
+  return temp;
+}
 
 
 
