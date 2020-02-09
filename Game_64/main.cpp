@@ -39,7 +39,7 @@ static bool inJumpSequence = false;
 static float jumpMinX = -3.0f; //starting x in parabola y = -x^2 + b
 static float jumpCurrentX = jumpMinX;
 static float jumpSpeedMag = 10.0f; //speed of iteration through "x" of function
-static float jumpMag = 0.01f; //magnitude of peak height
+static float jumpMag = 8.0f; //magnitude of peak height
 
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -102,7 +102,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos){
 //adding the derivative of f(x) = -x^2 + b every frame
 float jumpHeight(float deltaTime){
   jumpCurrentX = jumpCurrentX+jumpSpeedMag*deltaTime; //iterating the "x"
-  float newheight = -1.0f*jumpMag*(jumpCurrentX); //updating the "f(x)"
+  float newheight = -1.0f*jumpMag*deltaTime*(jumpCurrentX); //updating the "f(x)"
   return newheight;
 }
 
@@ -238,6 +238,8 @@ int main(){
     //Time / movement management
     float lastFrame = 0;
 
+    float peakHeight = -1;
+
     //GAME LOOP
     while (!glfwWindowShouldClose(window)){
         //normalizing movement to elapsed time
@@ -310,9 +312,12 @@ int main(){
             eye.y = 5.7;
             jumpCurrentX = jumpMinX;
             inJumpSequence = false;
+            cout << "Peak height: " << peakHeight << endl;
           }
         }
-        if(inJumpSequence) cout << "y: " << eye.y << endl;
+        //if(inJumpSequence) cout << "y: " << eye.y << endl;
+
+        if(eye.y > peakHeight) peakHeight = eye.y;
 
         //drawWorld();
         glfwSwapBuffers(window);
