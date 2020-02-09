@@ -179,7 +179,7 @@ vector<float> mergeAllArrays_coords(vector<Object> objs){
   return temp;
 }
 
-vector<float> mergeAllArrays_coords(vector<Object> objs){
+vector<float> mergeAllArrays_colors(vector<Object> objs){
   vector<float> temp;
   for(Object o : objs){
     temp.insert(temp.end(), o.colors.begin(), o.colors.end());
