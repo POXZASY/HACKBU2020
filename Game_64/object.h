@@ -12,6 +12,8 @@
 #define width_ dim[0]
 #define height_ dim[1]
 #define length dim[2]
+#define RoomDim(i) init_position[i]
+#define THICKNESS 5
 using namespace std;
 
 /*
@@ -25,30 +27,19 @@ public:
   Object(){
     min_X = max_X = min_Y = max_Y = min_Z = max_Z = 0;
   }
-  //TODO constructor with length and starting pos
-
+  
+  //person function ONLY
+  void updatePerson(float x, float y, float z){
+    min_X = x - .5;
+    min_Y = y - 5.7;
+    min_Z = z - .5;
+    max_X = x + .5;
+    max_Y = y + .3;
+    max_Z = z + .5;
+  }
 };
 
-/*************************************************************************************************************/
-class Triangle : public Object{
-public:
-  vector<vector<float>> coor;
-  vector<vector<float>> color;
-  Triangle(vector<vector<float>>, vector<vector<float>>);
-  vector<vector<float>> getCoor();
-};
 
-/*************************************************************************************************************/
-class Square : public Object{
-public:
-  vector<vector<float>> coor; // 4 coords
-  vector<vector<float>> color; //color[i] corresponds to coor[i]'s color
-  Square();
-  vector<vector<float>> getCoor();
-
-};
-
-/*************************************************************************************************************/
 class Cube : public Object {
 public:
   //vector<vector<float>> coor;
@@ -171,6 +162,23 @@ bool isCollision(Object a, Object b){
   return (a.min_X <= b.max_X && a.max_X >= b.min_X) &&
   (a.min_Z <= b.max_Z && a.max_Z >= b.min_Z) &&
   (a.min_Y <= b.max_Y && a.max_Y >= b.min_Y);
+}
+
+class Room : public Object{
+public:
+  Cube FrontWall;
+  Cube BackWall;
+  Cube LeftWall;
+  Cube RightWall;
+  Cube Ceiling;
+  Cube Floor;
+  Room();
+  Room(vector<float> init_position, vector<float> dim, vector<float> front_face, vector<float> back_face, vector<float> left_face, vector<float> right_face,
+  vector<float> top_face, vector<float> bottom_face){
+    this->FrontWall = Cube(init_position, {dim[0], dim[1], }, front_face, front_face, front_face, front_face, front_face,front_face);
+    this->BackWall = Cube({RoomDim[0]+dim[2], RoomDim[1], RoomDim[2]}, dim, back_face, back_face, back_face, back_face, back_face, back_face);
+
+  }
 }
 
 
