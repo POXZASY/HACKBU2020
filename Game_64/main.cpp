@@ -11,6 +11,12 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include <iostream>
 #include "loadShader.cpp"
+#include "object.h"
+
+
+#define PURPLE 1.0f, 0.0f, 1.0f
+#define RED 1.0f, 0.0f, 0.0f
+#define BLUE 0.0f, 0.0f, 1.0f
 
 using namespace std;
 
@@ -128,6 +134,23 @@ void drawWorld(){
   glEnd();
 }
 int main(){
+
+    //Making a Cube !
+    vector<float> colorP{PURPLE};
+    vector<float> colorR{RED};
+    vector<float> colorB{BLUE};
+    vector<float> position{10.0f, -2.0f, 10.0f};
+    vector<float> dimensions{10.0f, 10.0f, 10.0f};
+    Cube testCube = Cube(position, dimensions, colorP, colorP, colorR, colorR, colorB ,colorB);
+    const int numfloats = 108;
+    GLfloat g_vertex_buffer_data[numfloats];
+    GLfloat g_color_buffer_data[numfloats];
+    for(int i = 0; i < numfloats; i++){
+      g_vertex_buffer_data[i] = testCube.all_triangles[i];
+      g_color_buffer_data[i] = testCube.colors[i];
+    }
+
+
     int window_width;
     int window_height;
     GLFWwindow* window;
@@ -172,7 +195,7 @@ int main(){
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
-
+    /*
     //verticies of a triangle
     static const GLfloat g_vertex_buffer_data[] = {
       -100.0f, 0.0f, -100.0f, //tri 1
@@ -205,7 +228,7 @@ int main(){
       1.0f, 1.0f, 0.0f,
       1.0f, 1.0f, 0.0f,
     };
-
+    */
     GLuint colorbuffer;
     glGenBuffers(1, &colorbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
@@ -239,6 +262,8 @@ int main(){
     float lastFrame = 0;
 
     //float peakHeight = -1;
+
+
 
     //GAME LOOP
     while (!glfwWindowShouldClose(window)){
